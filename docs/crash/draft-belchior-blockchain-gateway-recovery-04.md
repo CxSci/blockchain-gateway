@@ -357,11 +357,11 @@ Example of a log entry created by G2, acknowledging G1 locking an asset (phase 2
 }``
 
 
-## 6. ODAP-2PC
+## 5. ODAP-2PC
 This section defines general considerations about crash recovery.
 ODAP-2PC is the application of the gateway crash recovery mechanism to asset transfers across all ODAP phases.
 
-### 6.1 Crash Recovery Model
+### 5.1 Crash Recovery Model
 Gateways can fail by crashing (i.e., becoming silent). In order to be able to recover from these crashes, gateways store log entries in a persistent data storage. Thus, gateways can recover by obtaining the latest successful operation and continuing from there. We consider two recovery models:
 
 * Self-healing mode: assumes that after a crash, a gateway eventually recovers. The gateway does not lose its long-term keys (public-private key pair) and can reestablish all TLS connections.
@@ -381,18 +381,18 @@ In both modes, after a gateway recovers, the gateways follow a general recovery 
 
 Finally, the gateway resumes the normal execution of ODAP.
 
-### 6.2 ODAP-2PC
+### 5.2 Recovery Procedure
 The previous section explained the general procedure that gateways follow upon crashing. In more detail, for each ODAP phase, we define the recovery procedure called ODAP-2PC:
 
-#### 6.2.1 Transfer  Initiation  Flow
-This phase of ODAP follows the Crash Recovery Model from Section 6.1.
+#### 5.2.1 Transfer  Initiation  Flow
+This phase of ODAP follows the Crash Recovery Model from Section 5.1.
 
-#### 6.2.2 Lock-Evidence  Flow
-This phase of ODAP follows the Crash Recovery Model from Section 6.1.
+#### 5.2.2 Lock-Evidence  Flow
+This phase of ODAP follows the Crash Recovery Model from Section 5.1.
 Note that, in this phase, distributed ledgers were changed by gateways. The crash gateways' recovery should take place in less than the timeout specified for the asset transfer. Otherwise, the rollback protocol present in the next section is applied.
 
-#### 6.2.3 Commitment Establishment  Flow
-This phase of ODAP follows the Crash Recovery Model from Section 6.1 and extra steps because in the third phase, distributed gateways changed ledgers.
+#### 5.2.3 Commitment Establishment  Flow
+This phase of ODAP follows the Crash Recovery Model from Section 5.1 and extra steps because in the third phase, distributed gateways changed ledgers.
 
 As transactions cannot be undone on blockchains, reverting a transaction includes issuing new transactions (with the contrary effect of the ones to be reverted). We use a rollback list [HERMES] to keep track of which transaction may be rolled back.
 The crash recovery protocol for the Commitment Establishment Flow is as follows (steps according to Figure 4 [HERMES]):
@@ -407,19 +407,19 @@ The crash recovery protocol for the Commitment Establishment Flow is as follows 
 
 5. On step 3.4, if the commit fails, abort the transaction and apply rollbacks on the source gateway.
 
-6. On step 3.5,  add a create asset transaction to the rollback list of the recipient gateway.
+5. On step 3.5,  add a create asset transaction to the rollback list of the recipient gateway.
 
 7. On step 3.8, if the commit is successful, ODAP terminates.
 
 8: Otherwise, if the last commit is unsuccessful, then abort the transaction and apply rollbacks to both gateways.
 
 
-### 6.3 ODAP-2PC Messages
+### 5.3 ODAP-2PC Messages
 ODAP-2PC messages are used to recover from crashes at the several ODAP phases.
 These messages inform gateways of the current state of a recovery procedure.
 ODAP-2PC messages follow the log format from Section 4.
 
-#### 6.3.1 RECOVER
+#### 5.3.1 RECOVER
 A RECOVER message is sent from the crashed gateway to the counterparty gateway, sending its most recent state.
 This message type is encoded on the recovery message field of an ODAP log.
 
@@ -432,7 +432,7 @@ The parameters of the recovery message payload consist of the following:
 * Last_entry_hash REQUIRED: Hash of previous log entry.
 
 
-#### 6.3.2 RECOVER-UDPDATE
+#### 5.3.2 RECOVER-UDPDATE
 The counterparty gateway sends the recover update message after receiving a RECOVER message from a recovered gateway.
 The recovered gateway informs of its current state (via the current state of the log).
 The counterparty gateway now calculates the difference between the log entry corresponding to the received sequence number from the recovered gateway and
@@ -443,7 +443,7 @@ The parameters of the recover update payload consist of the following:
 
 * recovered logs: the list of log messages that the recovered gateway needs to update
 
-#### 6.3.3 RECOVER-UPDATE ACK
+#### 5.3.3 RECOVER-UPDATE ACK
 The recover-update ack message (response to RECOVER-UPDATE) states if the recovered gateway's logs have been successfully updated.
 If inconsistencies are detected, the recovered gateway answers with initiates a dispute (RECOVER-DISPUTE message).
 
@@ -454,7 +454,7 @@ The parameters of this message consist of the following:
 * entries changed: list of hashes of log entries that were appended to the recovered gateway log.
 
 
-#### 6.3.4 RECOVER-SUCCESS
+#### 5.3.4 RECOVER-SUCCESS
 The counterparty gateway sends the recover-ack message to the recovered gateway acknowledging that the state is synchronized.
 
 The parameters of this message consist of the following:
@@ -462,7 +462,7 @@ The parameters of this message consist of the following:
 * success: true/false
 
 
-#### 6.3.5. ROLLBACK
+#### 5.3.5. ROLLBACK
 A rollback message is sent by a gateway that initiates a rollback as defined by ODAP-2PC.
 
 The parameters of this message consist of the following:
@@ -475,7 +475,7 @@ The parameters of this message consist of the following:
 
 
 
-#### 6.3.6 ROLLBACK-ACK
+#### 5.3.6 ROLLBACK-ACK
 The counterparty gateway sends the rollback-ack message to the recovered gateway acknowledging that the rollback has been performed successfully.
 
 The parameters of this message consist of the following:
@@ -484,10 +484,10 @@ The parameters of this message consist of the following:
 
 
 
-### 6.4 Examples 
+### 5.4 Examples 
 
 There are several situations when a crash may occur.
-#### 6.4.1 Crashing before issuing a command to the counter-party gateway
+#### 5.4.1 Crashing before issuing a command to the counter-party gateway
 
 The following figure represents the source gateway (G1) crashing before it issued an init command to the recipient gateway (G2). 
 
@@ -535,7 +535,7 @@ The following figure represents the source gateway (G1) crashing before it issue
      └──┘                           └──┘             └───────┘
 
 
-#### 6.4.2 Crashing after issuing a command to the counter-party gateway
+#### 5.4.2 Crashing after issuing a command to the counter-party gateway
 
 The second scenario requires further synchronization (figure below). At the retrieval of the latest log entry, G1 notices its log is outdated. It updates it upon necessary validation and then communicates its recovery to G2. The process then continues as defined.
 
@@ -606,7 +606,7 @@ The second scenario requires further synchronization (figure below). At the retr
      └──┘                           └──┘                             └───────┘
 
 
-## 7. Security Considerations
+## 6. Security Considerations
 
 We assume a trusted, authenticated, secure, reliable communication channel between gateways (i.e., messages cannot be spoofed and/or altered by an adversary) using TLS/HTTPS [TLS]. Clients support “acceptable” credential schemes such as OAuth2.0.
 We assume the storage service used provides the means necessary to assure the logs' confidentiality and integrity, stored and in transit. The service must provide an authentication and authorization scheme, e.g., based on OAuth and OIDC [OIDC], and use secure channels based on TLS/HTTPS [TLS].
@@ -617,7 +617,7 @@ Log entries need integrity, availability, and confidentiality guarantees, as the
 For extra guarantees, the nodes running the log storage API (or the gateway nodes themselves) can be protected by hardening technologies such as Intel SGX [CD16].
 
 
-## 8. References
+## 7. References
 
 [Arch] https://datatracker.ietf.org/doc/draft-hardjono-blockchain-interop-arch/
 
