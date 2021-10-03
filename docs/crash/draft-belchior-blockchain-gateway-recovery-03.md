@@ -381,7 +381,7 @@ In both modes, after a gateway recovers, the gateways follow a general recovery 
 
 Finally, the gateway resumes the normal execution of ODAP.
 
-### 6.2 ODAP-2PC
+### 6.2 Recovery Procedure
 The previous section explained the general procedure that gateways follow upon crashing. In more detail, for each ODAP phase, we define the recovery procedure called ODAP-2PC:
 
 #### 6.2.1 Transfer  Initiation  Flow
